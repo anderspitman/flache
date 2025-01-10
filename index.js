@@ -7,6 +7,14 @@ class Cache {
   #decode = JSON.parse;
   #textEncoder = new TextEncoder();
 
+  set encode(_) {
+    this.#encode = _;
+  }
+
+  set decode(_) {
+    this.#decode = _;
+  }
+
   constructor(opt) {
     const path = opt?.path ? opt.path : 'cache';
     this.#dir = openDirectory(path);
