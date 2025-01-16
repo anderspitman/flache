@@ -267,6 +267,11 @@ class NodeDirectoryTree extends DirectoryTree {
     return fs.writeFile(absPath, data, opt);
   }
 
+  async removeFile(path) {
+    const absPath = nodePath.join(this._rootPath, path);
+    await fs.rm(absPath);
+  }
+
   // TODO: CRITICAL: path security
   async openFile(path) {
 

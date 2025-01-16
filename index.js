@@ -7,27 +7,40 @@ class Cache {
   #decode = JSON.parse;
   #textEncoder = new TextEncoder();
 
-  set encode(_) {
-    this.#encode = _;
-  }
-
-  set decode(_) {
-    this.#decode = _;
-  }
-
   constructor(opt) {
     const path = opt?.path ? opt.path : 'cache';
+    this.#encode = opt?.encoder ? opt.encoder : JSON.stringify;
+    this.#decode = opt?.decoder ? opt.decoder : JSON.parse;
+
     this.#dir = openDirectory(path);
   }
 
   async get(key) {
     const path = await this.#keyToPath(key);
-    return this.#decode(await this.#dir.readFile(path, { encoding: 'utf-8' }));
+
+    let content;
+    try {
+      content = await this.#dir.readFile(path, { encoding: 'utf-8' });
+    }
+    catch (e) {
+      return null;
+    }
+
+    return this.#decode(content);
   }
 
   async set(key, value) {
     const path = await this.#keyToPath(key);
     await this.#dir.writeFile(path, this.#encode(value), { encoding: 'utf-8' });
+  }
+
+  async delete(key) {
+    const path = await this.#keyToPath(key);
+    try {
+      await this.#dir.removeFile(path);
+    }
+    catch (e) {
+    }
   }
 
   async #keyToPath(key) {
@@ -39,7 +52,6 @@ class Cache {
       .join("");
     const level1 = hashAsString.slice(0, 2);
     const level2 = hashAsString.slice(2, 4);
-    console.log(level1, level2);
     return `${level1}/${level2}/${hashAsString}`;
   }
 }
